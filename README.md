@@ -49,9 +49,8 @@ Optional:
 - rsyslog_server_stop_on_own_logs_: boolean (default False). Rsyslog server stores localhost logs on the centralized log folder and stops processing them, so them won't also appear on /var/log.
 
 ## Example
-```
----
 
+---
 ```
 - hosts: group_of_hosts_ansible_can_ping:!group_of_hosts_ansible_can_not_ping_ie_a_switch
   gather_facts: True
