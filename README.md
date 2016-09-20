@@ -20,6 +20,8 @@ Tested servers:
 
 Rsyslog distribution versions (for reference):
 
+| Distro    | Version|
+|-----------|--------|
 | Debian 6  | 4.6.4  |
 | Debian 7  | 5.8.11 |
 | Debian 8  | 8.4.2  |
