@@ -36,17 +36,17 @@ Rsyslog distribution versions (for reference):
 ## Variables
 
 Mandatory:
-- rsyslog_server_host_: server hostname as known by ansible.
+- _rsyslog_server_host_: server hostname as known by ansible.
 
 Optional:
-- rsyslog_relp_port_: integer (default 20514).
-- rsyslog_tcp_port_: integer (default 514).
-- rsyslog_udp_port_: integer (default 514).
-- rsyslog_server_logs_path_: string (default /var/log/remote).
-- rsyslog_server_catchall_path_: string (default {{ rsyslog_server_catchall }}/catchall).
-- rsyslog_server_catchall_enable_: boolean (default False). Information received from unknown hosts is saved.
-- rsyslog_server_catchall_logs_path_: string (default {{ _rsyslog_server_logs_path_/catchall). Information received from unknown hosts is saved.
-- rsyslog_server_stop_on_own_logs_: boolean (default False). Rsyslog server stores localhost logs on the centralized log folder and stops processing them, so them won't also appear on /var/log.
+- _rsyslog_relp_port_: integer (default 20514).
+- _rsyslog_tcp_port_: integer (default 514).
+- _rsyslog_udp_port_: integer (default 514).
+- _rsyslog_server_logs_path_: string (default /var/log/remote).
+- _rsyslog_server_catchall_path_: string (default {{ rsyslog_server_catchall }}/catchall).
+- _rsyslog_server_catchall_enable_: boolean (default False). Information received from unknown hosts is saved.
+- _rsyslog_server_catchall_logs_path_: string (default {{ _rsyslog_server_logs_path_/catchall). Information received from unknown hosts is saved.
+- _rsyslog_server_stop_on_own_logs_: boolean (default False). Rsyslog server stores localhost logs on the centralized log folder and stops processing them, so them won't also appear on /var/log.
 
 ## Example
 
