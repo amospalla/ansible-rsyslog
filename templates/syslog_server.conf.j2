@@ -1,0 +1,59 @@
+# File managed by Ansible
+
+{########################################}
+{# Macro get_reverse_name()             #}
+{########################################}
+{%  macro get_reverse_name(hostname) %}
+{%      set hostname_reverse = '' %}
+{%      set tokens = hostname.split(".") %}
+{%      for token in tokens|reverse %}
+{%          if loop.last %}
+{%              set hostname_reverse = hostname_reverse + token %}
+{{- hostname_reverse -}}
+{%          else %}
+{%              set hostname_reverse = hostname_reverse + token + '.' %}
+{%          endif %}
+{%      endfor %}
+{%  endmacro %}
+
+{########################################}
+{# Document                             #}
+{########################################}
+
+module(load="imudp")
+module(load="imtcp")
+module(load="imrelp")
+
+input(type="imudp" port="{{ rsyslog_udp_port }}")
+input(type="imtcp" port="{{ rsyslog_tcp_port }}")
+input(type="imrelp" port="{{ rsyslog_relp_port }}")
+
+{%  if rsyslog_server_catchall_enable == True %}
+template (name="template_catchall" type="string" string="{{ rsyslog_server_catchall_logs_path }}/%$year%/%$month%%$day%/%syslogfacility-text%-%syslogfacility%%syslogseverity-text%.log")
+{%  endif %}
+{%  for hostname in play_hosts %}
+{%      set hostname_reverse = get_reverse_name(hostname) %}
+{%      set hostname_reverse_no_dots = hostname_reverse|replace('.', '_') %}
+template (name="{{ hostname_reverse_no_dots }}" type="string" string="{{ rsyslog_server_logs_path }}/{{ hostname_reverse }}/%$year%/%$month%%$day%/%syslogfacility-text%-%syslogfacility%%syslogseverity-text%.log")
+{%  endfor %}
+
+{%  for hostname in play_hosts %}
+{%      set hostname_reverse = get_reverse_name(hostname) %}
+{%      set hostname_reverse_no_dots = hostname_reverse|replace('.', '_') %}
+{%      set resolved_ip = lookup('dig', hostname) %}
+{%      if loop.first %}
+if $fromhost-ip == '{{ hostvars[hostname]['client_address']|default(resolved_ip) }}' then {
+{%      else %}
+} else if $fromhost-ip == '{{ hostvars[hostname]['client_address']|default(resolved_ip) }}' then {
+{%      endif %}
+	action(type="omfile" dynaFile="{{ hostname_reverse_no_dots }}")
+{%  if hostname != rsyslog_server_host or rsyslog_server_stop_on_own_logs == True %}
+	stop
+{%  endif %}
+{%  endfor %}
+} else if $fromhost-ip != '127.0.0.1' then {
+{%  if rsyslog_server_catchall_enable == True %}
+	action(type="omfile" dynaFile="template_catchall")
+{%  endif %}
+	stop
+}

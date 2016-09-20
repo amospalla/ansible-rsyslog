@@ -1,0 +1,159 @@
+---
+- name: Get client address
+  set_fact:
+    client_address: "
+{###############################################################################}
+{# What this snippet does: print the first element of this list found:         #}
+{#     - any host address that resides on the same network subnet than any of  #}
+{#       the server addresses.                                                 #}
+{#     - the default host address (which has the default route).               #}
+{#     - 'None' is returned if no address is found.                            #}
+{#                                                                             #}
+{# REQUIRES: python-netaddr (pip install netaddr)                              #}
+{#                                                                             #}
+{# fun ignore_address(address):                                                #}
+{#     return address.starts_with('127.0')                                     #}
+{#                                                                             #}
+{# fun get_netmask_cidr(netmask):                                              #}
+{#     return /yy corresponding to x.x.x.x netmask format                      #}
+{#                                                                             #}
+{# fun add_address(host, address, netmask):                                    #}
+{#     if not ignore_address(address):                                         #}
+{#         list.append(address, netmask, cidr)                                 #}
+{#                                                                             #}
+{# for interface in ansible_interfaces:                                        #}
+{#     if interface.active:                                                    #}
+{#         add_address(interface.ipv4.address, interface.ipv4.netmask, 'True') #}
+{#         for item in interface.ipv4_secondaries:                             #}
+{#             add_address(item.address, item.netmask, 'False')                #}
+{#                                                                             #}
+{# LIST example:                                                               #}
+{#     [                                                                       #}
+{#       { address:      10.0.0.1,                                             #}
+{#         netmask:      255.255.255.0,                                        #}
+{#         cidr_address: 10.0.0.1/24,                                          #}
+{#         cidr_netmask: 24,                                                   #}
+{#         primary:      True },                                               #}
+{#       { ... }                                                               #}
+{#     ]                                                                       #}
+{#                                                                             #}
+{# Notes:                                                                      #}
+{#     - primary address means it is listed under ansible_devault_ipv4 dict    #}
+{#       (has default route)                                                   #}
+{###############################################################################}
+
+{%- set ignore_addresses = ['127.'] %}
+
+{%- macro ignore_address(address) -%}
+{%-     set ignore = 'False' %}
+{%-     for ignore_address in ignore_addresses %}
+{%-         if address.find(ignore_address) == 0 -%}
+{%-             set ignore = 'True' %}
+{%-         endif -%}
+{%-         if loop.last %}
+{{ ignore }}
+{%-         endif -%}
+{%-     endfor %}
+{%- endmacro -%}
+
+{%-  macro get_netmask_cidr(netmask) %}
+{%-     if   netmask == '255.255.255.255' %}32
+{%-     elif netmask == '255.255.255.254' %}31
+{%-     elif netmask == '255.255.255.252' %}30
+{%-     elif netmask == '255.255.255.248' %}29
+{%-     elif netmask == '255.255.255.240' %}28
+{%-     elif netmask == '255.255.255.224' %}27
+{%-     elif netmask == '255.255.255.192' %}26
+{%-     elif netmask == '255.255.255.128' %}25
+{%-     elif netmask == '255.255.255.0'   %}24
+{%-     elif netmask == '255.255.254.0'   %}23
+{%-     elif netmask == '255.255.252.0'   %}22
+{%-     elif netmask == '255.255.248.0'   %}21
+{%-     elif netmask == '255.255.240.0'   %}20
+{%-     elif netmask == '255.255.224.0'   %}19
+{%-     elif netmask == '255.255.192.0'   %}18
+{%-     elif netmask == '255.255.128.0'   %}17
+{%-     elif netmask == '255.255.0.0'     %}16
+{%-     elif netmask == '255.254.0.0'     %}15
+{%-     elif netmask == '255.252.0.0'     %}14
+{%-     elif netmask == '255.248.0.0'     %}13
+{%-     elif netmask == '255.240.0.0'     %}12
+{%-     elif netmask == '255.224.0.0'     %}11
+{%-     elif netmask == '255.192.0.0'     %}10
+{%-     elif netmask == '255.128.0.0'     %}9
+{%-     elif netmask == '255.0.0.0'       %}8
+{%-     elif netmask == '254.0.0.0'       %}7
+{%-     elif netmask == '252.0.0.0'       %}6
+{%-     elif netmask == '248.0.0.0'       %}5
+{%-     elif netmask == '240.0.0.0'       %}4
+{%-     elif netmask == '224.0.0.0'       %}3
+{%-     elif netmask == '192.0.0.0'       %}2
+{%-     elif netmask == '128.0.0.0'       %}1
+{%-     elif netmask == '0.0.0.0'         %}0
+{%-     endif %}
+{%- endmacro -%}
+
+{%- macro add_address(host, address, netmask) %}
+{%      if ignore_address(address)|trim == 'False' %}
+{%-         set cidr_netmask = get_netmask_cidr(netmask)  %}
+{%-         set cidr_address = address + '/' + cidr_netmask  %}
+{%-         if address == hostvars[host]['ansible_default_ipv4']['address'] %}
+{%-             set primary = 'True' %}
+{%-         else %}
+{%-             set primary = 'False' %}
+{%-         endif %}
+{%-         set _ = list.append({'address': address, 'netmask': netmask, 'cidr_netmask': cidr_netmask, 'cidr_address': cidr_address, 'primary': primary}) %}
+{%-     endif %}
+{%- endmacro -%}
+
+{%- macro get_addresses(host) %}
+{%-     for interface in hostvars[host]['ansible_interfaces']  %}
+{%-     set interface_name = 'ansible_' + interface|replace('-', '_')  %}
+{%-         if hostvars[host][interface_name].active  %}
+{%-             if hostvars[host][interface_name]['ipv4'] is defined %}
+{%-                 set address = hostvars[host][interface_name]['ipv4']['address']  %}
+{%-                 set netmask = hostvars[host][interface_name]['ipv4']['netmask']  %}
+{%-                 set _ = add_address(host, address, netmask) %}
+{%-             endif  %}
+{%-             if hostvars[host][interface_name]['ipv4_secondaries'] is defined %}
+{%-                 for item in hostvars[host][interface_name]['ipv4_secondaries'] %}
+{%-                     set _ = add_address(host, item.address, item.netmask) %}
+{%-                 endfor  %}
+{%-             endif  %}
+{%-         endif  %}
+{%-     endfor  %}
+{{ list }}
+{%- endmacro -%}
+
+{%- set server_address = rsyslog_server_host %}
+{%- set host_address = inventory_hostname %}
+{%- set list = [] %}{% set _ = get_addresses(server_address) %}{% set server_addresses = list %}
+{%- set list = [] %}{% set _ = get_addresses(host_address)   %}{% set host_addresses   = list %}
+
+{%- set result = {} %}
+{%- for host_address in host_addresses %}
+{%-     for server_address in server_addresses %}
+{%-         if host_address.address | ipaddr(server_address.cidr_address) | string != 'None' %}
+{%-              set _ = result.update({'address': host_address.address}) %}
+{%-         endif %}
+{%-     endfor %}
+{%- endfor %}
+
+{%- if result|length == 1 %}
+{{ result.address }}
+{%- else %}
+{%-     set found = 'False' %}
+{%-     for address in host_addresses %}
+{%-         if address.primary == 'True' %}
+{%-             set found = 'True' %}
+{{ address.address }}
+{%-         endif %}
+{%-         if loop.last and found == 'False' %}
+None
+{%-         endif %}
+{%-     endfor %}
+{%- endif %}"
+
+- name: Trim client_address
+  set_fact:
+    client_address: "{{ client_address|trim }}"

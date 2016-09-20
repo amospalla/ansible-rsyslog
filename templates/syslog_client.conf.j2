@@ -1,0 +1,11 @@
+# File managed by Ansible
+{% set method = rsyslog_client[ansible_distribution][ansible_distribution_major_version] %}
+
+{%- if method == 'relp' %}
+$ModLoad omrelp
+*.* :omrelp:{{ rsyslog_server_host }}:{{ rsyslog_relp_port }}
+{% elif method == 'tcp' %}
+*.* @@{{ rsyslog_server_host }}:{{ rsyslog_tcp_port }}
+{% elif method == 'udp' %}
+*.* @{{ rsyslog_server_host }}:{{ rsyslog_udp_port }}
+{% endif %}

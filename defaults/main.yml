@@ -1,0 +1,57 @@
+---
+rsyslog_server_catchall_enable: False
+rsyslog_server_catchall_logs_path: "{{ rsyslog_server_logs_path }}/catchall"
+rsyslog_server_stop_on_own_logs: False
+rsyslog_relp_port: 20514
+rsyslog_tcp_port: 514
+rsyslog_udp_port: 514
+rsyslog_server_logs_path: /var/log/remote
+rsyslog_server_catchall: True
+rsyslog_packages:
+  server:
+    Ubuntu:
+      '14':
+        - rsyslog
+        - rsyslog-relp
+      '16':
+        - rsyslog
+        - rsyslog-relp
+  client:
+    Debian:
+      '7':
+        - rsyslog
+        - rsyslog-relp
+      '8':
+        - rsyslog
+        - rsyslog-relp
+    Ubuntu:
+      '12':
+        - rsyslog
+        - rsyslog-relp
+      '14':
+        - rsyslog
+        - rsyslog-relp
+      '16':
+        - rsyslog
+        - rsyslog-relp
+    CentOS:
+      '5':
+        - rsyslog
+      '6':
+        - rsyslog
+        - rsyslog-relp
+      '7':
+        - rsyslog
+        - rsyslog-relp
+rsyslog_client:
+  Debian:
+    '7': relp
+    '8': relp
+  Ubuntu:
+    '12': relp
+    '14': relp
+    '16': relp
+  CentOS:
+    '5': tcp
+    '6': relp
+    '7': relp

@@ -1,0 +1,56 @@
+---
+- name: Install client packages | Debian
+  apt:
+    cache_valid_time: 86400
+    install_recommends: no
+    update_cache: True
+    state: present
+    name: '{{ item }}' 
+  with_items: '{{ rsyslog_packages.client[ansible_distribution][ansible_distribution_major_version] }}'
+  when: ansible_os_family == 'Debian'
+
+- name: Install client packages | RedHat
+  yum:
+    state: present
+    name: '{{ item }}' 
+  with_items: '{{ rsyslog_packages.client[ansible_distribution][ansible_distribution_major_version] }}'
+  when: ansible_os_family == 'RedHat'
+  notify:
+    - restart rsyslog
+
+- name: Ensure /etc/rsyslog.d/ exists
+  file:
+    path: /etc/rsyslog.d
+    state: directory
+    mode: 0755
+    group: root
+    owner: root
+  notify:
+    - restart rsyslog
+
+# - name: Ensure rsyslog sends fqdn as hostname
+#   lineinfile:
+#     dest: /etc/rsyslog.conf
+#     line: '$PreserveFQDN on'
+#     state: present
+#     insertbefore: BOF
+#   notify:
+#     - restart rsyslog
+
+- name: Ensure rsyslog includes /etc/rsyslog.d folder
+  lineinfile:
+    dest: /etc/rsyslog.conf
+    line: '$IncludeConfig /etc/rsyslog.d/*.conf'
+    state: present
+  notify:
+    - restart rsyslog
+
+- name: Generate config file
+  template:
+    src: syslog_client.conf.j2
+    dest: /etc/rsyslog.d/49remote.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart rsyslog

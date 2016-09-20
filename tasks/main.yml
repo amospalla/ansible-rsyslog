@@ -1,0 +1,28 @@
+---
+- name: Get client network address from where it talks to me                    
+  include: syslog_get_client_address.yml
+  delegate_to: 127.0.0.1
+  when: not inventory_hostname in rsyslog_server_host
+        and ansible_all_ipv4_addresses is defined
+
+- name: Include syslog_server.yml
+  include: syslog_server.yml
+  when: inventory_hostname in rsyslog_server_host  
+  tags:
+    - rsyslog_server
+    - syslog
+    - rsyslog
+    - server
+    - syslog_server
+    - logs
+
+- name: Include syslog_client.yml
+  include: syslog_client.yml
+  when: not inventory_hostname in rsyslog_server_host  
+        and ansible_all_ipv4_addresses is defined
+  tags:
+    - rsyslog_client
+    - syslog
+    - syslog_client
+    - logs
+    - client
