@@ -131,10 +131,10 @@
 {%- set list = [] %}{% set _ = get_addresses(client_hostname) %}{% set client_addresses = list %}
 
 {%- set result = {} %}
-{%- for host_address in client_addresses %}
+{%- for client_address in client_addresses %}
 {%-     for server_address in server_addresses %}
-{%-         if host_address.address | ipaddr(server_address.cidr_address) | string != 'None' %}
-{%-              set _ = result.update({'address': host_address.address}) %}
+{%-         if client_address.address | ipaddr(server_address.cidr_address) | string != 'None' %}
+{%-              set _ = result.update({'address': client_address.address}) %}
 {%-         endif %}
 {%-     endfor %}
 {%- endfor %}
