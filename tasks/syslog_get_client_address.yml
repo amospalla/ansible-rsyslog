@@ -125,13 +125,13 @@
 {{ list }}
 {%- endmacro -%}
 
-{%- set server_address = rsyslog_server_host %}
-{%- set host_address = inventory_hostname %}
-{%- set list = [] %}{% set _ = get_addresses(server_address) %}{% set server_addresses = list %}
-{%- set list = [] %}{% set _ = get_addresses(host_address)   %}{% set host_addresses   = list %}
+{%- set server_hostname = rsyslog_server_host %}
+{%- set client_hostname = inventory_hostname %}
+{%- set list = [] %}{% set _ = get_addresses(server_hostname) %}{% set server_addresses = list %}
+{%- set list = [] %}{% set _ = get_addresses(client_hostname) %}{% set client_addresses = list %}
 
 {%- set result = {} %}
-{%- for host_address in host_addresses %}
+{%- for host_address in client_addresses %}
 {%-     for server_address in server_addresses %}
 {%-         if host_address.address | ipaddr(server_address.cidr_address) | string != 'None' %}
 {%-              set _ = result.update({'address': host_address.address}) %}
@@ -143,7 +143,7 @@
 {{ result.address }}
 {%- else %}
 {%-     set found = 'False' %}
-{%-     for address in host_addresses %}
+{%-     for address in client_addresses %}
 {%-         if address.primary == 'True' %}
 {%-             set found = 'True' %}
 {{ address.address }}
