@@ -19,7 +19,5 @@
     owner: root
     group: root
     mode: '0644'
-  tags:
-    - rsyslog_server_config
   notify:
     - restart rsyslog
