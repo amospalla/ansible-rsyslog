@@ -22,6 +22,7 @@
 - name: Include syslog_server.yml
   include: syslog_server.yml
   when: inventory_hostname in rsyslog_server_host  
+  static: False
   tags:
     - rsyslog_server
     - rsyslog
@@ -30,6 +31,7 @@
   include: syslog_client.yml
   when: not inventory_hostname in rsyslog_server_host  
         and ansible_all_ipv4_addresses is defined
+  static: False
   tags:
     - rsyslog_client
     - rsyslog
