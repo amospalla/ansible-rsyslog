@@ -3,9 +3,9 @@
 
 {%- if method == 'relp' %}
 $ModLoad omrelp
-*.* :omrelp:{{ rsyslog_server_host }}:{{ rsyslog_relp_port }}
+*.* :omrelp:{{ server_address|default(rsyslog_server_host) }}:{{ rsyslog_relp_port }}
 {% elif method == 'tcp' %}
-*.* @@{{ rsyslog_server_host }}:{{ rsyslog_tcp_port }}
+*.* @@{{ server_address|default(rsyslog_server_host) }}:{{ rsyslog_tcp_port }}
 {% elif method == 'udp' %}
-*.* @{{ rsyslog_server_host }}:{{ rsyslog_udp_port }}
+*.* @{{ server_address|default(rsyslog_server_host) }}:{{ rsyslog_udp_port }}
 {% endif %}
