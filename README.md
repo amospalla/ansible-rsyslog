@@ -33,6 +33,9 @@ Rsyslog distribution versions (for reference):
 | Centos 6  | 5.8.10 |
 | Centos 7  | 7.4.7  |
 
+## Requisites
+- python-netaddr
+
 ## Variables
 
 Mandatory:
